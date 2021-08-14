@@ -1,0 +1,126 @@
+diff --git a/src/IRController.ino b/src/IRController.ino
+index 4929d85..f801513 100644
+--- a/src/IRController.ino
++++ b/src/IRController.ino
+@@ -21,12 +21,12 @@
+ 
+ // User settings are below here
+ //+=============================================================================
+-const bool getExternalIP = true;                               // Set to false to disable querying external IP
++const bool getExternalIP = false;                              // Set to false to disable querying external IP
+ 
+-const bool getTime = true;                                     // Set to false to disable querying for the time
++const bool getTime = false;                                    // Set to false to disable querying for the time
+ const int timeZone = -5;                                       // Timezone (-5 is EST)
+ 
+-const bool enableMDNSServices = true;                          // Use mDNS services, must be enabled for ArduinoOTA
++const bool enableMDNSServices = false;                         // Use mDNS services, must be enabled for ArduinoOTA
+ 
+ const bool bypassLocalAuth = true;                             // Allow local traffic to bypass HMAC check
+ 
+@@ -34,21 +34,9 @@ const unsigned int captureBufSize = 1024;                      // Size of the IR
+ 
+ const bool toggleRC = true;                                    // Toggle RC signals every other transmission
+ 
+-#if defined(ARDUINO_ESP8266_WEMOS_D1R1) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_WEMOS_D1MINIPRO) || defined(ARDUINO_ESP8266_WEMOS_D1MINILITE)
+-const uint16_t  pinr1 = D5;                                          // Receiving pin (GPIO14)
+-const uint16_t  pins1 = D6;                                          // Transmitting preset 1 (GPIO12)
+-const uint16_t  configpin = D2;                                      // Reset Pin (GPIO4)
+-const uint16_t  pins2 = 5;                                           // Transmitting preset 2
+-const uint16_t  pins3 = 12;                                          // Transmitting preset 3
+-const uint16_t  pins4 = 13;                                          // Transmitting preset 4
+-#else
+-const uint16_t  pinr1 = 14;                                          // Receiving pin
+-const uint16_t  pins1 = 4;                                           // Transmitting preset 1
+-const uint16_t  configpin = 10;                                      // Reset Pin
+-const uint16_t  pins2 = 5;                                           // Transmitting preset 2
+-const uint16_t  pins3 = 12;                                          // Transmitting preset 3
+-const uint16_t  pins4 = 13;                                          // Transmitting preset 4
+-#endif
++const uint16_t  RECV_PIN = 14;                                 // Receiving pin
++const uint16_t  kIrLed = 13;                                   // Transmitting preset 1
++const uint16_t  configpin = 5;                                 // Reset Pin
+ //+=============================================================================
+ // User settings are above here
+ 
+@@ -76,11 +64,8 @@ Ticker ticker;
+ bool shouldSaveConfig = false;                                 // Flag for saving data
+ bool holdReceive = false;                                      // Flag to prevent IR receiving while transmitting
+ 
+-IRrecv irrecv(pinr1, captureBufSize, 35);
+-IRsend irsend1(pins1);
+-IRsend irsend2(pins2);
+-IRsend irsend3(pins3);
+-IRsend irsend4(pins4);
++IRrecv irrecv(RECV_PIN, captureBufSize, 35);
++IRsend irsend(kIrLed);
+ 
+ const unsigned long resetfrequency = 259200000;                // 72 hours in milliseconds for external IP reset
+ static const char ntpServerName[] = "time.google.com";
+@@ -579,6 +564,9 @@ void setup() {
+   Serial.println("");
+   Serial.println("ESP8266 IR Controller");
+   pinMode(configpin, INPUT_PULLUP);
++  pinMode(kIrLed,OUTPUT);
++  pinMode(RECV_PIN,INPUT);
++  digitalWrite(kIrLed,LOW);
+   Serial.print("Config pin GPIO");
+   Serial.print(configpin);
+   Serial.print(" set to: ");
+@@ -959,10 +947,7 @@ void setup() {
+     }
+   }
+ 
+-  irsend1.begin();
+-  irsend2.begin();
+-  irsend3.begin();
+-  irsend4.begin();
++  irsend.begin();
+   irrecv.enableIRIn();
+   Serial.println("Ready to send and receive IR signals");
+ }
+@@ -1091,11 +1076,8 @@ String getValue(String data, char separator, int index)
+ //
+ IRsend pickIRsend (int out) {
+   switch (out) {
+-    case 1: return irsend1;
+-    case 2: return irsend2;
+-    case 3: return irsend3;
+-    case 4: return irsend4;
+-    default: return irsend1;
++    case 1: return irsend;
++    default: return irsend;
+   }
+ }
+ 
+@@ -1258,11 +1240,8 @@ void sendHomePage(String message, String header, int type, int httpcode) {
+   server->sendContent("      <div class='row'>\n");
+   server->sendContent("        <div class='col-md-12'>\n");
+   server->sendContent("          <ul class='list-unstyled'>\n");
+-  server->sendContent("            <li><span class='badge'>GPIO " + String(pinr1) + "</span> Receiving </li>\n");
+-  server->sendContent("            <li><span class='badge'>GPIO " + String(pins1) + "</span> Transmitter 1 </li>\n");
+-  server->sendContent("            <li><span class='badge'>GPIO " + String(pins2) + "</span> Transmitter 2 </li>\n");
+-  server->sendContent("            <li><span class='badge'>GPIO " + String(pins3) + "</span> Transmitter 3 </li>\n");
+-  server->sendContent("            <li><span class='badge'>GPIO " + String(pins4) + "</span> Transmitter 4 </li></ul>\n");
++  server->sendContent("            <li><span class='badge'>GPIO " + String(RECV_PIN) + "</span> Receiving </li>\n");
++  server->sendContent("            <li><span class='badge'>GPIO " + String(kIrLed) + "</span> Transmitter 1 </li></ul>\n");
+   server->sendContent("        </div>\n");
+   server->sendContent("      </div>\n");
+   sendFooter();
+@@ -1520,6 +1499,8 @@ void irblast(String type, String dataStr, unsigned int len, int rdelay, int puls
+       Serial.print(type);
+       Serial.print(":");
+       Serial.println(len);
++      pinMode(RECV_PIN,OUTPUT); 
++      digitalWrite(RECV_PIN,LOW);
+       if (type == "nec") {
+         irsend.sendNEC(data, len);
+       } else if (type == "sony") {
+@@ -1561,6 +1542,7 @@ void irblast(String type, String dataStr, unsigned int len, int rdelay, int puls
+       } else if (type == "ecoclim") {
+         irsend.sendEcoclim(data, len);
+       }
++      pinMode(RECV_PIN,INPUT);
+       if (p + 1 < pulse) delay(pdelay);
+     }
+     if (r + 1 < repeat) delay(rdelay);

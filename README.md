@@ -1,14 +1,28 @@
-智能空调控制，通过最新的Blinker实现猫精开关空调，设置温度等等
+艾韵智能场景控固件适配
 ---
-### 已实现的功能:
-- 风速调节
-- 温度调节
-- 模式调节 [只支持APP]
-- 定时任务 [APP自带功能]
-- 信号检测
 
-### 界面配置： 
+## 目前状况
+- 能用则行
+- 不定期更新
 
-```
-{¨config¨{¨headerColor¨¨transparent¨¨headerStyle¨¨dark¨¨background¨{¨img¨¨assets/img/bg/f5.jpg¨¨isFull¨»}}¨dashboard¨|{¨type¨¨btn¨¨ico¨¨fad fa-power-off¨¨mode¨Ê¨t0¨¨电源¨¨t1¨¨文本2¨¨bg¨É¨cols¨Ë¨rows¨Ë¨key¨¨BUTTON_1¨´x´É´y´Î¨speech¨|{¨cmd¨¨开关电脑¨¨act¨¨tap¨}÷¨lstyle¨Ê¨clr¨¨#076EEF¨}{ßA¨ran¨ßF¨设定温度¨ßU¨#389BEE¨¨max¨¤U¨min¨¤GßJÉßKÑßLËßM¨Slidert¨´x´É´y´ÌßO|÷ßTË}{ßA¨deb¨ßEÉßJÉßKÑßLÌßM¨debug¨´x´É´y´ÒßO|÷}{ßAßWßF¨风速¨ßUßYßZÌßaÉßJÉßKÑßLËßM¨Sliderf¨´x´É´y´ÊßO|÷ßTË}{ßAßBßC¨fal fa-power-off¨ßEÊßF¨扫风¨ßHßIßJÉßKËßLËßM¨BUTTON_2¨´x´Ë´y´ÎßO|÷ßTÊßUßV}{ßAßBßC¨fad fa-snowflakes¨ßEÉßF¨制冷¨ßHßIßJÉßKËßLËßM¨BUTTON_4¨´x´Ï´y´ÎßO|÷ßTÉßUßV}{ßAßBßC¨fad fa-humidity¨ßEÉßF¨除湿¨ßHßIßJÉßKËßLËßM¨BUTTON_5¨´x´Ë´y´ÐßO|÷ßTÉßUßV}{ßAßBßC¨fad fa-wind¨ßEÉßF¨送风¨ßHßIßJÉßKËßLËßM¨BUTTON_6¨´x´Í´y´ÐßO|÷ßTÉßUßV}{ßAßBßC¨fad fa-sun¨ßEÉßF¨制热¨ßHßIßJÉßKËßLËßM¨BUTTON_7¨´x´Í´y´ÎßO|÷ßTÉßUßV}{ßAßBßC¨fad fa-chart-network¨ßEÉßF¨自动¨ßHßIßJÉßKËßLËßM¨BUTTON_3¨´x´É´y´ÐßO|÷ßUßV}{ßA¨num¨ßF¨信号强度¨ßC¨fad fa-signal¨ßUßVßaÉßZ¢1c¨uni¨´db´ßJÉßKËßLËßM¨rssi¨´x´Ï´y´ÐßO|÷ßTÉ}÷¨actions¨|¦ßP¦¨switch¨‡¨text¨‡´on´¨打开?name¨¨off¨¨关闭?name¨—÷¨triggers¨|{¨source¨ß14¨source_zh¨¨开关状态¨¨state¨|´on´ß17÷¨state_zh¨|´打开´´关闭´÷}÷}
-```
+## Patch / 项目
+- [IR_Aircondition_8266](https://github.com/BecodReyes/CJK_IR/tree/master/IR_Aircondition_8266): 最初版本，已弃坑
+- [ESP8266-HTTP-IR-Blaster.diff](https://github.com/BecodReyes/CJK_IR/tree/master/ESP8266-HTTP-IR-Blaster.diff): 第二版，支持使用HTTP进行控制、学习
+- [IRbaby.diff](https://github.com/BecodReyes/CJK_IR/tree/master/IRbaby.diff): 最新版，支持HASS、MQTT、APP、多种空调
+
+## 使用方法
+> 1. **前往[Releases](https://github.com/BecodReyes/CJK_IR/releases)下载并烧录固件 
+> 2. **设备上电，移动端搜索连接到 `ESP**` 信号，并在浏览器中输入 192.168.4.1 对设备进行联网设置
+> 3. **下载 `Android` 客户端并运行,对设备进行 MQTT 和红外收发引脚设定。[IRbaby-android](https://github.com/Caffreyfans/IRbaby-android/releases)**
+> 4. **匹配电器，完成控制, HomeAssistant 用户可在控制界面导出配置文件（现已支持 HomeAssistant 自动发现功能，设备添加之后，可直接在 HA 集成中看到）**
+
+> clone项目后patch diff
+> ```
+> git clone https://github.com/Caffreyfans/IRbaby
+> wget https://raw.githubusercontent.com/BecodReyes/CJK_IR/master/IRbaby.diff
+> git apply IRbaby.diff
+> ```
+
+## 感谢
+- [mdhiggins/ESP8266-HTTP-IR-Blaster](https://github.com/mdhiggins/ESP8266-HTTP-IR-Blaster)
+- [Caffreyfans/IRbaby](https://github.com/Caffreyfans/IRbaby)
