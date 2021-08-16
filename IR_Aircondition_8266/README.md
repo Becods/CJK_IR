@@ -6,7 +6,7 @@
 - 暂停维护
 - 准备弃用blinker
 
-![1.png](https://raw.githubusercontent.com/BecodReyes/CJK_IR/master/IR_Aircondition_8266/pic/1.png)
+![1.png](https://raw.githubusercontent.com/BecodReyes/CJK_IR/master/pic/1.png)
 
 ### 已实现的功能:
 - 远程开关
